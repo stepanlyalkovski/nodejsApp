@@ -17,7 +17,7 @@ blogRouter.post('/', function(req, res, next) {
     res.sendStatus(201);
 });
 
-blogRouter.put('/', function(req, res, next) {
+blogRouter.put('/:id', function(req, res, next) {
     blogService.updateArticle(req.body.article);
     res.sendStatus(200);
 });
