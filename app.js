@@ -12,9 +12,9 @@ app.use(bodyParser.json())
 app.use('/blogs', blogRouter);
 app.use(function(req, res) {
   res.render('index', {
-    url: req.originalUrl, 
-    method: req.method 
-  });
+      url: req.originalUrl, 
+      method: req.method 
+    });
 });
 
 app.listen(3000, function() {
