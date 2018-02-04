@@ -1,4 +1,5 @@
-module.exports = blogService();
+var mongoose = require('mongoose');
+var BlogArticle = require('./models/blogArticle');
 
 function blogService() {
     return {
@@ -9,31 +10,25 @@ function blogService() {
         deleteArticle: deleteArticle        
     };
 
-    function getArticle(id) {
-        console.log('get blog article with id: ' + id);
-        return {
-            id: id,
-            title: 'Article with id: ' + id,
-            text: 'Some default text',
-            author: 'John Doe',
-        }
+    function getArticle(id, callback) {
+        BlogArticle.findOne({ _id: id }, {'__v': 0}, callback);
     }
 
-    function getAllArticles() {
-        return ['article_1', 'article_2', 'article_3'];
+    function getAllArticles(callback) {
+        BlogArticle.find({}, { '__v': 0 }, callback);
     }
 
-    function saveArticle(article) {
-        var id = 55;
-        console.log('save article with id: ' + id);
-        return id;
+    function saveArticle(article, callback) {
+        BlogArticle.create(article, callback);
     }
 
-    function updateArticle(article) {
-        console.log('Article was updated. Id: ' + article.id);
+    function updateArticle(article, callback) {
+        BlogArticle.update({ _id: article._id }, article, { w: 1 }, callback);
     }
 
-    function deleteArticle(id) {
-        console.log('Article was deleted. Id: ' + id);
+    function deleteArticle(id, callback) {
+        Tank.remove({ _id: id }, callback);
     }
 }
+
+module.exports = blogService();

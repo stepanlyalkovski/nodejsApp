@@ -5,15 +5,22 @@ var fs = require( 'fs' );
 var path = require('path');
 var winston = require('winston');
 var path = require('path');
+var mongoose = require('mongoose');
+
 var port = 3000;  
 
 run();
 
 function run() {
-  var app = configureApp();
-
-  app.listen(port, function() {
-    console.log('App listening on port ' + port + "!");
+  mongoose.connect('mongodb://localhost/frontcamp');
+  var db = mongoose.connection;
+  db.on('error', console.error.bind(console, 'connection error:'));
+  db.once('open', function() {
+    var app = configureApp();
+    
+      app.listen(port, function() {
+        console.log('App listening on port ' + port + "!");
+      });
   });
 }
 
