@@ -1,13 +1,12 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var blogRouter = require('./blogRouter');
-var fs = require( 'fs' );
-var path = require('path');
-var winston = require('winston');
-var path = require('path');
-var mongoose = require('mongoose');
+const express = require('express');
+const bodyParser = require('body-parser');
+const blogRouter = require('./blogRouter');
+const fs = require( 'fs' );
+const winston = require('winston');
+const path = require('path');
+const mongoose = require('mongoose');
 
-var port = 3000;  
+let port = 3000;  
 
 run();
 
@@ -25,39 +24,57 @@ function run() {
 }
 
 function configureApp() {
-  var app = express();
-  var logger = createLogger();
-  
+  let app = express();
+  let logger = createLogger();
+  let logRequest = createRequestLogMiddleware(logger);
+
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
   
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
   
-  app.use(function(req, res, next) {
-    var requestDate = new Date(Date.now()).toLocaleString();
-    logger.info('request recieved', { url: req.originalUrl, method: req.method, date: requestDate });
-  
-    next();
-  });
+  app.use(logRequest);
   app.use('/blogs', blogRouter);
-  app.use(function(req, res) {
-    res.render('index', {
-        url: req.originalUrl, 
-        method: req.method 
-      });
-  });
+  app.use(handleUnknownRoute);
+  app.use(logErrors);
+  app.use(clientErrorHandler);
 
   return app;
 }
 
+function createRequestLogMiddleware(logger) {
+  return function(req, res, next) {
+    var requestDate = new Date(Date.now()).toLocaleString();
+    logger.info('request recieved', { url: req.originalUrl, method: req.method, date: requestDate });
+    next();
+  }
+}
+
+function handleUnknownRoute(req, res) {
+  res.render('index', {
+    url: req.originalUrl, 
+    method: req.method 
+  }); 
+}
+
+function logErrors (err, req, res, next) {
+  console.error(err.stack);
+  next(err);
+}
+
+function clientErrorHandler (err, req, res, next) {
+  console.log(err);
+  res.status(500).send({ error: err.message })
+}
+
 function createLogger() {
-  var logDirectory = 'logs';
+  const logDirectory = 'logs';
   if (!fs.existsSync(logDirectory)) {
       fs.mkdirSync(logDirectory);
   }
   
-  var logger = winston.createLogger({
+  let logger = winston.createLogger({
     level: 'info',
     transports: [
       new winston.transports.File({ filename: path.join(logDirectory, 'requestInfo.log') })
